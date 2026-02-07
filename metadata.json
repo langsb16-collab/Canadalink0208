@@ -1,0 +1,7 @@
+{
+  "name": "K-Link Canada",
+  "description": "A comprehensive digital infrastructure for the Korean Canadian community, featuring settlement guides, business networks, data analytics, and mental health support.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
