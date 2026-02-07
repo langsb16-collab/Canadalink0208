@@ -13,17 +13,29 @@ import InfraView from './components/InfraView';
 import TranslationManagementView from './components/TranslationManagementView';
 import VerificationModal from './components/VerificationModal';
 import LifestyleHubView from './components/LifestyleHubView';
-import { Tab, Language, ParticipationStatus } from './types';
+import PostCreationView from './components/PostCreationView';
+import PostDetailView from './components/PostDetailView';
+import { Tab, SubView, Language, ParticipationStatus, CommunityPost } from './types';
 import { translations } from './locales/translations';
-import { MOCK_NOTIFICATIONS, MOCK_MARKETPLACE, MOCK_JOBS, MOCK_REALESTATE, MOCK_FRIENDS, MOCK_PROMO } from './constants';
+import { MOCK_MARKETPLACE, MOCK_JOBS, MOCK_REALESTATE, MOCK_FRIENDS, MOCK_PROMO } from './constants';
 import { Bell, Search, ShieldCheck, CheckCircle2, Info, Lock, Menu, User } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
+  const [subView, setSubView] = useState<SubView>(SubView.LIST);
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
   const [lang, setLang] = useState<Language>('ko');
   const [showVerification, setShowVerification] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
+  // Dynamic listing states (Simulating API)
+  const [marketplacePosts, setMarketplacePosts] = useState(MOCK_MARKETPLACE.map(p => ({ ...p, status: 'active' as const })));
+  const [jobPosts, setJobPosts] = useState(MOCK_JOBS.map(p => ({ ...p, status: 'active' as const })));
+  const [realEstatePosts, setRealEstatePosts] = useState(MOCK_REALESTATE.map(p => ({ ...p, status: 'active' as const })));
+  const [friendPosts, setFriendPosts] = useState(MOCK_FRIENDS.map(p => ({ ...p, status: 'active' as const })));
+  const [promoPosts, setPromoPosts] = useState(MOCK_PROMO.map(p => ({ ...p, status: 'active' as const })));
+
   const [participation, setParticipation] = useState<ParticipationStatus>(() => {
     const saved = localStorage.getItem('klink_participation');
     return saved ? JSON.parse(saved) : { isVerified: false };
@@ -47,6 +59,13 @@ const App: React.FC = () => {
     localStorage.setItem('klink_participation', JSON.stringify(participation));
   }, [participation]);
 
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    setSubView(SubView.LIST);
+    setSelectedPost(null);
+    setEditingPost(null);
+  };
+
   const handleVerificationSuccess = (phone: string) => {
     const mockHash = btoa(phone).substring(0, 16).toLowerCase();
     setParticipation({
@@ -57,6 +76,117 @@ const App: React.FC = () => {
     setShowVerification(false);
   };
 
+  // CRUD Operations
+  const handleSavePost = (data: CommunityPost) => {
+    const isEdit = subView === SubView.EDIT;
+    
+    const postWithMeta = { 
+      ...data, 
+      status: 'active' as const,
+      phone_hash: participation.phoneHash,
+      author: participation.phoneHash ? `VerifiedUser_${participation.phoneHash.substring(0, 4)}` : 'Member'
+    };
+
+    const updateList = (prev: CommunityPost[]) => {
+      if (isEdit) return prev.map(p => p.id === data.id ? postWithMeta : p);
+      return [postWithMeta, ...prev];
+    };
+
+    switch (activeTab) {
+      case Tab.MARKETPLACE: setMarketplacePosts(updateList); break;
+      case Tab.JOBS: setJobPosts(updateList); break;
+      case Tab.REAL_ESTATE: setRealEstatePosts(updateList); break;
+      case Tab.FRIENDS: setFriendPosts(updateList); break;
+      case Tab.PROMOTION: setPromoPosts(updateList); break;
+    }
+    
+    setSubView(SubView.LIST);
+    setEditingPost(null);
+  };
+
+  const handleDeletePost = (id: string) => {
+    const filterOut = (prev: CommunityPost[]) => prev.filter(p => p.id !== id);
+    
+    switch (activeTab) {
+      case Tab.MARKETPLACE: setMarketplacePosts(filterOut); break;
+      case Tab.JOBS: setJobPosts(filterOut); break;
+      case Tab.REAL_ESTATE: setRealEstatePosts(filterOut); break;
+      case Tab.FRIENDS: setFriendPosts(filterOut); break;
+      case Tab.PROMOTION: setPromoPosts(filterOut); break;
+    }
+    
+    setSubView(SubView.LIST);
+    setSelectedPost(null);
+  };
+
+  const handleReportPost = (id: string, reason: string) => {
+    const markAsHidden = (prev: CommunityPost[]) => prev.map(p => p.id === id ? { ...p, status: 'hidden' as const, report_reason: reason } : p);
+    
+    switch (activeTab) {
+      case Tab.MARKETPLACE: setMarketplacePosts(markAsHidden); break;
+      case Tab.JOBS: setJobPosts(markAsHidden); break;
+      case Tab.REAL_ESTATE: setRealEstatePosts(markAsHidden); break;
+      case Tab.FRIENDS: setFriendPosts(markAsHidden); break;
+      case Tab.PROMOTION: setPromoPosts(markAsHidden); break;
+    }
+    
+    setSubView(SubView.LIST);
+    setSelectedPost(null);
+  };
+
+  const renderLifestyleView = (title: string, desc: string, posts: CommunityPost[]) => {
+    const activePosts = posts.filter(p => p.status === 'active' || !p.status);
+
+    if (subView === SubView.CREATE || subView === SubView.EDIT) {
+      return (
+        <PostCreationView 
+          title={title} 
+          lang={lang} 
+          onBack={() => setSubView(SubView.LIST)} 
+          onSubmit={handleSavePost} 
+          initialData={editingPost}
+        />
+      );
+    }
+    
+    if (subView === SubView.DETAIL && selectedPost) {
+      return (
+        <PostDetailView 
+          post={selectedPost} 
+          lang={lang} 
+          onBack={() => setSubView(SubView.LIST)} 
+          participation={participation}
+          onEdit={(post) => {
+            setEditingPost(post);
+            setSubView(SubView.EDIT);
+          }}
+          onDelete={handleDeletePost}
+          onReport={handleReportPost}
+        />
+      );
+    }
+    
+    return (
+      <LifestyleHubView 
+        title={title}
+        description={desc}
+        posts={activePosts}
+        lang={lang}
+        onRequireVerification={() => setShowVerification(true)}
+        participation={participation}
+        isMobile={isMobile}
+        onCreate={() => {
+          setEditingPost(null);
+          setSubView(SubView.CREATE);
+        }}
+        onDetail={(post) => {
+          setSelectedPost(post);
+          setSubView(SubView.DETAIL);
+        }}
+      />
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case Tab.DASHBOARD: return <DashboardView lang={lang} />;
@@ -64,59 +194,19 @@ const App: React.FC = () => {
       case Tab.BUSINESS: return <BusinessView lang={lang} />;
       
       case Tab.MARKETPLACE: 
-        return <LifestyleHubView 
-          title={lang === 'ko' ? "중고거래" : "Marketplace"} 
-          description={lang === 'ko' ? "이웃과 함께하는 안전한 중고 물품 거래" : "Safe second-hand trading with neighbors"}
-          posts={MOCK_MARKETPLACE}
-          lang={lang}
-          onRequireVerification={() => setShowVerification(true)}
-          participation={participation}
-          isMobile={isMobile}
-        />;
+        return renderLifestyleView(lang === 'ko' ? "중고거래" : "Marketplace", lang === 'ko' ? "이웃과 함께하는 안전한 중고 물품 거래" : "Safe second-hand trading with neighbors", marketplacePosts);
       
       case Tab.JOBS:
-        return <LifestyleHubView 
-          title={lang === 'ko' ? "구인구직" : "Jobs"} 
-          description={lang === 'ko' ? "한인 비즈니스 구인과 구직의 연결점" : "Connecting Korean businesses and job seekers"}
-          posts={MOCK_JOBS}
-          lang={lang}
-          onRequireVerification={() => setShowVerification(true)}
-          participation={participation}
-          isMobile={isMobile}
-        />;
+        return renderLifestyleView(lang === 'ko' ? "구인구직" : "Jobs", lang === 'ko' ? "한인 비즈니스 구인과 구직의 연결점" : "Connecting Korean businesses and job seekers", jobPosts);
 
       case Tab.REAL_ESTATE:
-        return <LifestyleHubView 
-          title={lang === 'ko' ? "부동산" : "Real Estate"} 
-          description={lang === 'ko' ? "렌트, 매매, 룸쉐어 정보를 한눈에" : "Rentals, sales, and room share at a glance"}
-          posts={MOCK_REALESTATE}
-          lang={lang}
-          onRequireVerification={() => setShowVerification(true)}
-          participation={participation}
-          isMobile={isMobile}
-        />;
+        return renderLifestyleView(lang === 'ko' ? "부동산" : "Real Estate", lang === 'ko' ? "렌트, 매매, 룸쉐어 정보를 한눈에" : "Rentals, sales, and room share at a glance", realEstatePosts);
 
       case Tab.FRIENDS:
-        return <LifestyleHubView 
-          title={lang === 'ko' ? "친구찾기" : "Friends"} 
-          description={lang === 'ko' ? "취미와 관심사가 비슷한 이웃을 찾아보세요" : "Find neighbors with similar hobbies and interests"}
-          posts={MOCK_FRIENDS}
-          lang={lang}
-          onRequireVerification={() => setShowVerification(true)}
-          participation={participation}
-          isMobile={isMobile}
-        />;
+        return renderLifestyleView(lang === 'ko' ? "친구찾기" : "Friends", lang === 'ko' ? "취미와 관심사가 비슷한 이웃을 찾아보세요" : "Find neighbors with similar hobbies and interests", friendPosts);
 
       case Tab.PROMOTION:
-        return <LifestyleHubView 
-          title={lang === 'ko' ? "지역홍보" : "Promotion"} 
-          description={lang === 'ko' ? "소상공인과 개인의 서비스를 알리는 공간" : "A space for small businesses and personal services"}
-          posts={MOCK_PROMO}
-          lang={lang}
-          onRequireVerification={() => setShowVerification(true)}
-          participation={participation}
-          isMobile={isMobile}
-        />;
+        return renderLifestyleView(lang === 'ko' ? "지역홍보" : "Promotion", lang === 'ko' ? "소상공인과 개인의 서비스를 알리는 공간" : "A space for small businesses and personal services", promoPosts);
 
       case Tab.POLICY: return <PolicyView participation={participation} onRequireVerification={() => setShowVerification(true)} lang={lang} />;
       case Tab.SUPPORT: return <SupportView />;
@@ -129,12 +219,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-bg flex font-sans antialiased text-slate-900 overflow-x-hidden">
-      {!isMobile && <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} lang={lang} />}
+      {!isMobile && <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} lang={lang} />}
       
       <main className={`flex-1 flex flex-col transition-all duration-300 ${isMobile ? 'pb-24 pt-4 px-4' : 'md:ml-80 md:mr-4 my-4 pb-4'}`}>
         {/* Header - Adaptive */}
         <header className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 md:mb-10 md:px-8">
-          <div className="w-full md:w-auto flex items-center justify-between gap-6">
+          <div className="w-full md:w-auto flex items-center justify-between gap-6 cursor-pointer" onClick={() => handleTabChange(Tab.DASHBOARD)}>
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg">K</div>
                 <div className="flex flex-col">
@@ -189,7 +279,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {isMobile && <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} lang={lang} />}
+      {isMobile && <BottomNav activeTab={activeTab} setActiveTab={handleTabChange} lang={lang} />}
       
       {showVerification && (
         <VerificationModal 
@@ -197,12 +287,6 @@ const App: React.FC = () => {
           onSuccess={handleVerificationSuccess} 
         />
       )}
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        [dir="rtl"] { text-align: right; }
-      `}</style>
     </div>
   );
 };

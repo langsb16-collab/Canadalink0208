@@ -15,6 +15,13 @@ export enum Tab {
   TRANSLATION = 'translation'
 }
 
+export enum SubView {
+  LIST = 'list',
+  CREATE = 'create',
+  DETAIL = 'detail',
+  EDIT = 'edit'
+}
+
 export type Language = 'ko' | 'en' | 'zh' | 'es' | 'fr' | 'ar' | 'ja' | 'pt' | 'ru' | 'id' | 'bn' | 'hi';
 
 export type I18nString = Partial<Record<Language, string>>;
@@ -31,15 +38,6 @@ export interface StatisticsData {
   growth: number;
 }
 
-export interface BusinessItem {
-  id: string;
-  name_i18n: I18nString;
-  category: string;
-  city: string;
-  rating: number;
-  description_i18n: I18nString;
-}
-
 export interface CommunityPost {
   id: string;
   title: string;
@@ -50,8 +48,22 @@ export interface CommunityPost {
   lat: number;
   lng: number;
   createdAt: string;
-  image?: string;
+  image_urls?: string[];
   type?: string;
+  author?: string;
+  contact?: string;
+  phone_hash?: string;
+  status?: 'active' | 'hidden' | 'expired'; // New operational status
+  report_reason?: string;
+}
+
+export interface BusinessItem {
+  id: string;
+  name_i18n: I18nString;
+  category: string;
+  city: string;
+  rating: number;
+  description_i18n: I18nString;
 }
 
 export interface SettlementGuide {

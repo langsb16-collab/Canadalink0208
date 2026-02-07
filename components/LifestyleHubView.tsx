@@ -11,14 +11,24 @@ interface LifestyleHubViewProps {
   onRequireVerification: () => void;
   participation: ParticipationStatus;
   isMobile: boolean;
+  onCreate: () => void;
+  onDetail: (post: CommunityPost) => void;
 }
 
 const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({ 
-  title, description, posts, lang, onRequireVerification, participation, isMobile
+  title, description, posts, lang, onRequireVerification, participation, isMobile, onCreate, onDetail
 }) => {
   const [showMapOverlay, setShowMapOverlay] = useState(false);
   const [radius, setRadius] = useState(5);
-  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const [selectedPostFromMap, setSelectedPostFromMap] = useState<CommunityPost | null>(null);
+
+  const handleCreateRequest = () => {
+    if (!participation.isVerified) {
+      onRequireVerification();
+    } else {
+      onCreate();
+    }
+  };
 
   // Desktop View
   if (!isMobile) {
@@ -31,8 +41,8 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
               <p className="text-slate-500 font-medium">{description}</p>
            </div>
            <div className="flex gap-4">
-              <button className="btn-secondary flex items-center gap-2"><Filter size={18} /> Filters</button>
-              <button onClick={() => !participation.isVerified && onRequireVerification()} className="btn-primary flex items-center gap-2">
+              <button className="btn-secondary flex items-center gap-2 hover:bg-slate-50"><Filter size={18} /> Filters</button>
+              <button onClick={handleCreateRequest} className="btn-primary flex items-center gap-2 shadow-brand">
                  <Plus size={18} /> Post Listing
               </button>
            </div>
@@ -45,16 +55,19 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
                  <input 
                    type="text" 
                    placeholder="Search listings near you..." 
-                   className="w-full h-14 bg-white rounded-[20px] pl-14 pr-6 soft-shadow border border-slate-100 outline-none font-bold"
+                   className="w-full h-14 bg-white rounded-[20px] pl-14 pr-6 soft-shadow border border-slate-100 outline-none font-bold focus:ring-2 focus:ring-indigo-500/10"
                  />
                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 -mt-2 text-slate-400" size={20} />
               </div>
 
               {posts.map(post => (
-                <div key={post.id} className="bg-white p-6 rounded-[32px] soft-shadow border border-white hover:ring-2 hover:ring-indigo-600/20 transition-all group cursor-pointer" onClick={() => setSelectedPost(post)}>
-                   {post.image && (
-                     <div className="h-40 w-full rounded-2xl overflow-hidden mb-4">
-                        <img src={post.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div key={post.id} className="bg-white p-6 rounded-[32px] soft-shadow border border-white hover:ring-2 hover:ring-indigo-600/20 transition-all group cursor-pointer" onClick={() => onDetail(post)}>
+                   {post.image_urls && post.image_urls.length > 0 && (
+                     <div className="h-40 w-full rounded-2xl overflow-hidden mb-4 bg-slate-100">
+                        <img src={post.image_urls[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        {post.image_urls.length > 1 && (
+                          <div className="absolute bottom-3 right-3 bg-slate-900/60 backdrop-blur px-2 py-1 rounded-lg text-[9px] text-white font-black uppercase">+{post.image_urls.length - 1} More</div>
+                        )}
                      </div>
                    )}
                    <div className="flex justify-between items-start mb-2">
@@ -73,13 +86,22 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
            <div className="flex-1 bg-white rounded-[50px] soft-shadow border border-white relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-79.3832,43.6532,11/1000x1000?access_token=pk.dummy')] bg-cover bg-center"></div>
               
-              {/* Radius Visualizer (SVG Simulation) */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <div className="w-[300px] h-[300px] rounded-full border-2 border-indigo-600/30 bg-indigo-600/5 animate-pulse"></div>
-              </div>
+              {/* Markers */}
+              {posts.map(post => (
+                 <div 
+                   key={post.id} 
+                   className="absolute cursor-pointer transition-transform hover:scale-125 z-10" 
+                   style={{ left: `${30 + Math.random() * 40}%`, top: `${20 + Math.random() * 60}%` }}
+                   onClick={() => setSelectedPostFromMap(post)}
+                 >
+                    <div className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white shadow-xl ${selectedPostFromMap?.id === post.id ? 'bg-indigo-600 scale-125 ring-8 ring-indigo-50' : 'bg-slate-900'}`}>
+                       <MapIcon size={14} />
+                    </div>
+                 </div>
+              ))}
 
               {/* HUD Controls */}
-              <div className="absolute top-8 right-8 flex flex-col gap-3">
+              <div className="absolute top-8 right-8 flex flex-col gap-3 z-20">
                  <div className="bg-white p-4 rounded-3xl shadow-xl border border-slate-100 flex flex-col gap-4">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Radius</p>
                     <div className="flex flex-col gap-2">
@@ -94,17 +116,20 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
                  <button className="bg-white p-4 rounded-3xl shadow-xl text-slate-600 hover:text-indigo-600 transition-all"><Navigation size={20} /></button>
               </div>
 
-              {/* Selected Post Popover */}
-              {selectedPost && (
-                <div className="absolute bottom-10 left-10 right-10 flex items-center gap-6 bg-white p-8 rounded-[40px] shadow-2xl animate-fadeIn">
-                   <img src={selectedPost.image || 'https://via.placeholder.com/100'} className="w-24 h-24 rounded-3xl object-cover" />
+              {/* Map Selection HUD */}
+              {selectedPostFromMap && (
+                <div className="absolute bottom-10 left-10 right-10 flex items-center gap-6 bg-white p-8 rounded-[40px] shadow-2xl animate-fadeIn z-30 border border-indigo-50">
+                   <img src={(selectedPostFromMap.image_urls && selectedPostFromMap.image_urls[0]) || 'https://via.placeholder.com/100'} className="w-24 h-24 rounded-3xl object-cover bg-slate-100" />
                    <div className="flex-1">
-                      <h5 className="text-xl font-black text-slate-900">{selectedPost.title}</h5>
-                      <p className="text-sm font-bold text-emerald-600 mt-1">{selectedPost.price}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                         <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{selectedPostFromMap.city}</span>
+                      </div>
+                      <h5 className="text-xl font-black text-slate-900 leading-tight">{selectedPostFromMap.title}</h5>
+                      <p className="text-sm font-bold text-emerald-600 mt-1">{selectedPostFromMap.price}</p>
                    </div>
                    <div className="flex gap-2">
-                      <button onClick={() => setSelectedPost(null)} className="p-4 bg-slate-50 rounded-2xl text-slate-400"><X size={20} /></button>
-                      <button className="px-8 py-4 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20">View Details</button>
+                      <button onClick={() => setSelectedPostFromMap(null)} className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:bg-slate-100"><X size={20} /></button>
+                      <button onClick={() => onDetail(selectedPostFromMap)} className="px-8 py-4 bg-indigo-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">View Details</button>
                    </div>
                 </div>
               )}
@@ -117,29 +142,34 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
   // Mobile View
   return (
     <div className="space-y-6 pb-20 animate-fadeIn">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center px-2">
          <div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{title}</h2>
             <p className="text-xs font-bold text-slate-400 mt-0.5">Community Network</p>
          </div>
-         <button onClick={() => !participation.isVerified && onRequireVerification()} className="w-12 h-12 bg-indigo-600 text-white rounded-2xl shadow-lg flex items-center justify-center">
+         <button onClick={handleCreateRequest} className="w-12 h-12 bg-indigo-600 text-white rounded-2xl shadow-lg flex items-center justify-center active:scale-90 transition-transform">
             <Plus size={24} />
          </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-2">
          {['All', 'Nearby', 'Recent', 'Popular'].map(cat => (
-           <button key={cat} className="px-5 py-2.5 bg-white rounded-full text-[11px] font-black uppercase tracking-widest border border-slate-100 soft-shadow whitespace-nowrap">
+           <button key={cat} className="px-5 py-2.5 bg-white rounded-full text-[11px] font-black uppercase tracking-widest border border-slate-100 soft-shadow whitespace-nowrap active:bg-slate-50 transition-colors">
               {cat}
            </button>
          ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 px-2">
         {posts.map(post => (
-          <div key={post.id} className="bg-white p-5 rounded-[32px] soft-shadow border border-white flex gap-5 active:scale-95 transition-transform" onClick={() => setSelectedPost(post)}>
-             {post.image ? (
-               <img src={post.image} className="w-24 h-24 rounded-2xl object-cover" />
+          <div key={post.id} className="bg-white p-5 rounded-[32px] soft-shadow border border-white flex gap-5 active:scale-95 transition-transform cursor-pointer" onClick={() => onDetail(post)}>
+             {post.image_urls && post.image_urls.length > 0 ? (
+               <div className="relative">
+                 <img src={post.image_urls[0]} className="w-24 h-24 rounded-2xl object-cover bg-slate-100" />
+                 {post.image_urls.length > 1 && (
+                   <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm text-white text-[8px] font-black px-1 rounded uppercase">+{post.image_urls.length - 1}</div>
+                 )}
+               </div>
              ) : (
                <div className="w-24 h-24 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">
                   <Tag size={24} />
@@ -159,10 +189,10 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
         ))}
       </div>
 
-      {/* Mobile Floating Action Button */}
+      {/* Mobile Floating Map Button */}
       <button 
         onClick={() => setShowMapOverlay(true)}
-        className="fixed bottom-28 right-8 w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center z-[110] animate-bounce"
+        className="fixed bottom-28 right-8 w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center z-[110] animate-bounce active:scale-90 transition-transform"
       >
         <MapIcon size={24} />
       </button>
@@ -183,18 +213,44 @@ const LifestyleHubView: React.FC<LifestyleHubViewProps> = ({
                  </div>
               </div>
 
-              <div className="absolute bottom-10 left-6 right-6 bg-white p-6 rounded-[40px] shadow-2xl">
-                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nearby: {radius}km</span>
-                    <div className="flex gap-2">
-                       {[3, 5, 10].map(r => (
-                          <button key={r} onClick={() => setRadius(r)} className={`w-10 h-10 rounded-xl text-[10px] font-black ${radius === r ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
-                             {r}
-                          </button>
-                       ))}
+              {/* Markers for Mobile */}
+              {posts.map(post => (
+                 <div 
+                   key={post.id} 
+                   className="absolute cursor-pointer" 
+                   style={{ left: `${20 + Math.random() * 60}%`, top: `${20 + Math.random() * 60}%` }}
+                   onClick={() => setSelectedPostFromMap(post)}
+                 >
+                    <div className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white shadow-xl ${selectedPostFromMap?.id === post.id ? 'bg-indigo-600 ring-4 ring-indigo-100' : 'bg-slate-900'}`}>
+                       <MapIcon size={14} />
                     </div>
                  </div>
-                 <button className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest">Update Results</button>
+              ))}
+
+              <div className="absolute bottom-10 left-6 right-6 space-y-4">
+                 {selectedPostFromMap && (
+                    <div className="bg-white p-4 rounded-[32px] shadow-2xl flex items-center gap-4 animate-fadeIn border border-indigo-50" onClick={() => onDetail(selectedPostFromMap)}>
+                       <img src={(selectedPostFromMap.image_urls && selectedPostFromMap.image_urls[0]) || 'https://via.placeholder.com/60'} className="w-16 h-16 rounded-2xl object-cover bg-slate-100" />
+                       <div className="flex-1">
+                          <p className="text-xs font-black text-slate-900">{selectedPostFromMap.title}</p>
+                          <p className="text-[10px] font-bold text-emerald-600">{selectedPostFromMap.price}</p>
+                       </div>
+                       <ChevronRight size={16} className="text-slate-300" />
+                    </div>
+                 )}
+                 <div className="bg-white p-6 rounded-[40px] shadow-2xl">
+                    <div className="flex justify-between items-center mb-4">
+                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nearby: {radius}km</span>
+                       <div className="flex gap-2">
+                          {[3, 5, 10].map(r => (
+                             <button key={r} onClick={() => setRadius(r)} className={`w-10 h-10 rounded-xl text-[10px] font-black ${radius === r ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                {r}
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+                    <button onClick={() => setShowMapOverlay(false)} className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:bg-slate-800">Update Results</button>
+                 </div>
               </div>
            </div>
         </div>
