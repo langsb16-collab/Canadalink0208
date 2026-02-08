@@ -19,6 +19,7 @@ import { Tab, SubView, Language, ParticipationStatus, CommunityPost } from './ty
 import { translations } from './locales/translations';
 import { MOCK_MARKETPLACE, MOCK_JOBS, MOCK_REALESTATE, MOCK_FRIENDS, MOCK_PROMO } from './constants';
 import { Bell, Search, ShieldCheck, CheckCircle2, Info, Lock, Menu, User } from 'lucide-react';
+import { ENV } from './services/env';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.DASHBOARD);
@@ -37,17 +38,34 @@ const App: React.FC = () => {
   const [promoPosts, setPromoPosts] = useState(MOCK_PROMO.map(p => ({ ...p, status: 'active' as const })));
 
   const [participation, setParticipation] = useState<ParticipationStatus>(() => {
-    const saved = localStorage.getItem('klink_participation');
-    return saved ? JSON.parse(saved) : { isVerified: false };
+    try {
+      const saved = localStorage.getItem('klink_participation');
+      return saved ? JSON.parse(saved) : { isVerified: false };
+    } catch (e) {
+      return { isVerified: false };
+    }
   });
 
   const t = translations[lang];
 
   useEffect(() => {
+    // 런타임 에러 전역 감지
+    const handleError = (event: ErrorEvent) => {
+      console.error("RUNTIME_CAUGHT:", event.error);
+    };
+    window.addEventListener('error', handleError);
+
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    
+    // 배포 완료 로그
+    console.log("App Component Mounted Successfully at:", new Date().toLocaleTimeString());
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('error', handleError);
+    };
   }, []);
 
   useEffect(() => {
@@ -188,32 +206,37 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    switch (activeTab) {
-      case Tab.DASHBOARD: return <DashboardView lang={lang} />;
-      case Tab.SETTLEMENT: return <SettlementView lang={lang} />;
-      case Tab.BUSINESS: return <BusinessView lang={lang} />;
-      
-      case Tab.MARKETPLACE: 
-        return renderLifestyleView(lang === 'ko' ? "중고거래" : "Marketplace", lang === 'ko' ? "이웃과 함께하는 안전한 중고 물품 거래" : "Safe second-hand trading with neighbors", marketplacePosts);
-      
-      case Tab.JOBS:
-        return renderLifestyleView(lang === 'ko' ? "구인구직" : "Jobs", lang === 'ko' ? "한인 비즈니스 구인과 구직의 연결점" : "Connecting Korean businesses and job seekers", jobPosts);
+    try {
+      switch (activeTab) {
+        case Tab.DASHBOARD: return <DashboardView lang={lang} />;
+        case Tab.SETTLEMENT: return <SettlementView lang={lang} />;
+        case Tab.BUSINESS: return <BusinessView lang={lang} />;
+        
+        case Tab.MARKETPLACE: 
+          return renderLifestyleView(lang === 'ko' ? "중고거래" : "Marketplace", lang === 'ko' ? "이웃과 함께하는 안전한 중고 물품 거래" : "Safe second-hand trading with neighbors", marketplacePosts);
+        
+        case Tab.JOBS:
+          return renderLifestyleView(lang === 'ko' ? "구인구직" : "Jobs", lang === 'ko' ? "한인 비즈니스 구인과 구직의 연결점" : "Connecting Korean businesses and job seekers", jobPosts);
 
-      case Tab.REAL_ESTATE:
-        return renderLifestyleView(lang === 'ko' ? "부동산" : "Real Estate", lang === 'ko' ? "렌트, 매매, 룸쉐어 정보를 한눈에" : "Rentals, sales, and room share at a glance", realEstatePosts);
+        case Tab.REAL_ESTATE:
+          return renderLifestyleView(lang === 'ko' ? "부동산" : "Real Estate", lang === 'ko' ? "렌트, 매매, 룸쉐어 정보를 한눈에" : "Rentals, sales, and room share at a glance", realEstatePosts);
 
-      case Tab.FRIENDS:
-        return renderLifestyleView(lang === 'ko' ? "친구찾기" : "Friends", lang === 'ko' ? "취미와 관심사가 비슷한 이웃을 찾아보세요" : "Find neighbors with similar hobbies and interests", friendPosts);
+        case Tab.FRIENDS:
+          return renderLifestyleView(lang === 'ko' ? "친구찾기" : "Friends", lang === 'ko' ? "취미와 관심사가 비슷한 이웃을 찾아보세요" : "Find neighbors with similar hobbies and interests", friendPosts);
 
-      case Tab.PROMOTION:
-        return renderLifestyleView(lang === 'ko' ? "지역홍보" : "Promotion", lang === 'ko' ? "소상공인과 개인의 서비스를 알리는 공간" : "A space for small businesses and personal services", promoPosts);
+        case Tab.PROMOTION:
+          return renderLifestyleView(lang === 'ko' ? "지역홍보" : "Promotion", lang === 'ko' ? "소상공인과 개인의 서비스를 알리는 공간" : "A space for small businesses and personal services", promoPosts);
 
-      case Tab.POLICY: return <PolicyView participation={participation} onRequireVerification={() => setShowVerification(true)} lang={lang} />;
-      case Tab.SUPPORT: return <SupportView />;
-      case Tab.ADMIN: return <AdminView />;
-      case Tab.INFRA: return <InfraView />;
-      case Tab.TRANSLATION: return <TranslationManagementView />;
-      default: return <DashboardView lang={lang} />;
+        case Tab.POLICY: return <PolicyView participation={participation} onRequireVerification={() => setShowVerification(true)} lang={lang} />;
+        case Tab.SUPPORT: return <SupportView />;
+        case Tab.ADMIN: return <AdminView />;
+        case Tab.INFRA: return <InfraView />;
+        case Tab.TRANSLATION: return <TranslationManagementView />;
+        default: return <DashboardView lang={lang} />;
+      }
+    } catch (e) {
+      console.error("RENDER_ERROR:", e);
+      return <div className="p-10 text-center font-bold text-rose-500 bg-rose-50 rounded-3xl">Something went wrong while rendering this section.</div>;
     }
   };
 

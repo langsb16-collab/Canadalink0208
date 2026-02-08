@@ -5,28 +5,36 @@ import {
   Activity, ShieldCheck, Database, Server, Cpu, 
   Globe, Terminal, ChevronRight, Zap, RefreshCcw, 
   Box, Settings, HardDrive, Share2, Layers,
-  Cloud, MessageSquare, List, HardDriveDownload
+  Cloud, CheckCircle2, AlertCircle, Info
 } from 'lucide-react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 const InfraView: React.FC = () => {
   const securityMetrics = [
     { label: 'WAF Filtered', value: '1,420', trend: '+12%', color: 'text-amber-500' },
-    { label: 'DDoS Active', value: 'Healthy', trend: 'Global', color: 'text-emerald-500' },
+    { label: 'DDoS Protection', value: 'Active', trend: 'Global', color: 'text-emerald-500' },
     { label: 'KV Cache Hit', value: '98.4%', trend: 'Sub-ms', color: 'text-indigo-500' },
+  ];
+
+  const d1Checklist = [
+    { item: 'Batch Transaction Logic', status: 'Passed', desc: 'Loop INSERT pattern replaced with .batch()' },
+    { item: 'Query Indexing', status: 'Verified', desc: 'WHERE/ORDER BY columns indexed' },
+    { item: 'Atomic Updates', status: 'Passed', desc: 'Single-query stock/count logic applied' },
+    { item: 'Pagination Controls', status: 'Active', desc: 'Mandatory LIMIT 50 on all list fetches' },
+    { item: 'Cache Layering', status: 'Enabled', desc: 'KV Cache matching enabled for read-heavy API' }
   ];
 
   return (
     <div className="space-y-8 animate-fadeIn pb-24">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center px-2">
         <div>
            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Infra Pulse <span className="text-indigo-600">PRO</span></h2>
-           <p className="text-slate-500 font-medium">Serverless Architecture: Cloudflare Pages + Workers + D1</p>
+           <p className="text-slate-500 font-medium text-sm">Deployment: Production-Ready Cloudflare D1 + Workers</p>
         </div>
         <div className="flex gap-3">
-           <div className="bg-emerald-500/10 text-emerald-600 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-500/20 shadow-sm">
+           <div className="bg-emerald-50 text-emerald-600 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2 border border-emerald-100 shadow-sm">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-              242 Global Edge Points
+              242 Edge Points Active
            </div>
         </div>
       </div>
@@ -47,55 +55,29 @@ const InfraView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           
-          <div className="bg-white p-10 rounded-[50px] soft-shadow border border-white relative overflow-hidden">
-             <h4 className="font-black text-xl text-slate-900 uppercase mb-12 flex items-center gap-2">
-                <Globe size={24} className="text-indigo-600" /> Serverless Edge Network
-             </h4>
-             
-             <div className="relative flex flex-col md:flex-row items-center justify-between gap-12 py-10">
-                <div className="flex flex-col gap-6">
-                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col gap-2">
-                      <p className="text-[9px] font-black text-slate-400 uppercase">Frontend</p>
-                      <div className="flex items-center gap-3">
-                         <Cloud size={20} className="text-indigo-600" />
-                         <span className="text-[11px] font-black uppercase text-slate-700 tracking-tighter">CF Pages</span>
-                      </div>
-                   </div>
-                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col gap-2">
-                      <p className="text-[9px] font-black text-slate-400 uppercase">Logic Tier</p>
-                      <div className="flex items-center gap-3">
-                         <Zap size={20} className="text-amber-500" />
-                         <span className="text-[11px] font-black uppercase text-slate-700 tracking-tighter">CF Workers</span>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="flex flex-col items-center">
-                   <ChevronRight className="rotate-90 md:rotate-0 text-slate-300" size={32} />
-                </div>
-
-                <div className="flex-1 bg-slate-900 rounded-[40px] p-10 relative text-white border-2 border-slate-800">
-                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 px-4 rounded-full text-[9px] font-black text-white uppercase tracking-widest">
-                      Persistent Data Tier
-                   </div>
-                   <div className="flex flex-col md:flex-row gap-6 items-center justify-center">
-                      <div className="bg-slate-800 p-6 rounded-[32px] border border-slate-700 text-center w-full">
-                         <Database size={24} className="mx-auto mb-2 text-indigo-400" />
-                         <p className="text-[10px] font-black uppercase tracking-widest">D1 DB</p>
-                         <p className="text-[8px] text-slate-500 font-bold mt-1">SQLITE EDGE</p>
-                      </div>
-                      <div className="bg-slate-800 p-6 rounded-[32px] border border-slate-700 text-center w-full">
-                         <Box size={24} className="mx-auto mb-2 text-emerald-400" />
-                         <p className="text-[10px] font-black uppercase tracking-widest">KV STORE</p>
-                         <p className="text-[8px] text-slate-500 font-bold mt-1">KV CACHE</p>
-                      </div>
-                      <div className="bg-slate-800 p-6 rounded-[32px] border border-slate-700 text-center w-full">
-                         <HardDrive size={24} className="mx-auto mb-2 text-rose-400" />
-                         <p className="text-[10px] font-black uppercase tracking-widest">R2 BUCKET</p>
-                         <p className="text-[8px] text-slate-500 font-bold mt-1">OBJECTS</p>
-                      </div>
-                   </div>
-                </div>
+          {/* D1 Operational Checklist (New Section) */}
+          <div className="bg-white p-10 rounded-[50px] soft-shadow border border-white">
+             <div className="flex justify-between items-center mb-10">
+                <h4 className="font-black text-xl text-slate-900 uppercase flex items-center gap-2">
+                   <CheckCircle2 size={24} className="text-emerald-500" /> D1 Operational Audit
+                </h4>
+                <span className="text-[10px] font-black text-slate-400 uppercase">Last Sync: Just Now</span>
+             </div>
+             <div className="space-y-4">
+                {d1Checklist.map((check, i) => (
+                  <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-indigo-200 transition-all">
+                     <div className="flex items-center gap-5">
+                        <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-50 group-hover:scale-110 transition-transform">
+                           <ShieldCheck size={20} />
+                        </div>
+                        <div>
+                           <p className="text-sm font-black text-slate-900">{check.item}</p>
+                           <p className="text-[10px] font-bold text-slate-400 uppercase">{check.desc}</p>
+                        </div>
+                     </div>
+                     <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">{check.status}</span>
+                  </div>
+                ))}
              </div>
           </div>
 
@@ -104,32 +86,36 @@ const InfraView: React.FC = () => {
                 <RefreshCcw size={200} />
              </div>
              <h4 className="font-bold text-lg mb-12 flex items-center gap-2">
-                <Terminal size={20} className="text-emerald-500" /> Global Log Collector Pipeline
+                <Terminal size={20} className="text-emerald-500" /> Distributed Architecture
              </h4>
 
              <div className="flex flex-col lg:flex-row gap-12 items-center">
                 <div className="border border-slate-800 rounded-[32px] p-8 bg-slate-900/50 w-full lg:w-1/3 text-center">
-                   <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-6">Regional Ingress</p>
+                   <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-6">Traffic Ingress</p>
                    <div className="bg-slate-800 p-6 rounded-2xl flex flex-col items-center gap-4">
                       <Activity size={32} className="text-slate-500" />
-                      <span className="text-[10px] font-bold">Edge Build_882</span>
+                      <span className="text-[10px] font-bold">WAF Enabled</span>
                    </div>
                 </div>
 
                 <div className="flex-1 flex flex-col items-center gap-6">
                    <div className="bg-indigo-600 p-6 rounded-[32px] shadow-xl text-center w-full max-w-[200px]">
                       <Share2 size={32} className="mx-auto mb-2" />
-                      <p className="text-[10px] font-black uppercase">Tail Log Aggregator</p>
+                      <p className="text-[10px] font-black uppercase">Worker Controller</p>
                    </div>
                    <div className="h-10 w-px bg-slate-700"></div>
                    <div className="bg-slate-800 p-6 rounded-2xl w-full border border-slate-700 flex justify-around">
                       <div className="flex flex-col items-center gap-1">
                          <Box size={16} className="text-indigo-400" />
-                         <span className="text-[8px] font-black uppercase">Durable Object</span>
+                         <span className="text-[8px] font-black uppercase">KV (Cache)</span>
                       </div>
                       <div className="flex flex-col items-center gap-1">
-                         <HardDriveDownload size={16} className="text-emerald-400" />
-                         <span className="text-[8px] font-black uppercase">Clickhouse</span>
+                         <Database size={16} className="text-emerald-400" />
+                         <span className="text-[8px] font-black uppercase">D1 (Relational)</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                         <HardDrive size={16} className="text-rose-400" />
+                         <span className="text-[8px] font-black uppercase">R2 (Storage)</span>
                       </div>
                    </div>
                 </div>
@@ -140,7 +126,7 @@ const InfraView: React.FC = () => {
         <div className="space-y-6">
            <div className="bg-white p-10 rounded-[50px] soft-shadow border border-white">
               <h4 className="font-extrabold text-slate-900 mb-8 flex items-center gap-2 uppercase tracking-tighter">
-                 <Activity size={20} className="text-indigo-600" /> Health Metrics
+                 <Activity size={20} className="text-indigo-600" /> Load Distribution
               </h4>
               <div className="h-[200px] mb-8">
                  <ResponsiveContainer width="100%" height="100%">
@@ -151,11 +137,11 @@ const InfraView: React.FC = () => {
               </div>
               <div className="space-y-4">
                  <div className="flex justify-between p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                    <span className="text-[10px] font-black text-indigo-600 uppercase">KV Read Latency</span>
+                    <span className="text-[10px] font-black text-indigo-600 uppercase">Edge Response</span>
                     <span className="text-[11px] font-black text-slate-900">0.8 ms</span>
                  </div>
                  <div className="flex justify-between p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                    <span className="text-[10px] font-black text-emerald-600 uppercase">D1 Query Time</span>
+                    <span className="text-[10px] font-black text-emerald-600 uppercase">D1 Query Latency</span>
                     <span className="text-[11px] font-black text-slate-900">18.2 ms</span>
                  </div>
               </div>
@@ -165,11 +151,11 @@ const InfraView: React.FC = () => {
               <div className="absolute top-0 right-0 p-6 opacity-20">
                  <ShieldCheck size={120} />
               </div>
-              <h4 className="font-black text-lg mb-2 uppercase tracking-tight">Access Boundary</h4>
+              <h4 className="font-black text-lg mb-2 uppercase tracking-tight">Security Boundary</h4>
               <p className="text-slate-400 text-xs leading-relaxed mb-10 font-medium">
-                 Admin requests are authenticated via CF Access and JWT verification. Unauthorized entry results in immediate 403 at the edge.
+                 All requests are verified at the Edge via JWT and Cloudflare Access. D1 access is strictly limited to Worker bindings.
               </p>
-              <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20">
+              <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
                  Rotate Secrets
               </button>
            </div>
