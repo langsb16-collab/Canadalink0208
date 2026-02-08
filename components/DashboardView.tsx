@@ -63,7 +63,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ lang }) => {
       <div className="flex flex-col md:flex-row justify-between items-end mb-2 px-2">
          <div>
             <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">{t.analytics_title}</h2>
-            <p className="text-slate-500 text-sm font-medium">{t.analytics_desc}</p>
+            <p className="text-slate-500 text-sm font-medium whitespace-pre-line leading-relaxed">{t.analytics_desc}</p>
          </div>
          <div className="flex gap-2 mt-4 md:mt-0">
             <span className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-100 flex items-center gap-1.5">

@@ -24,7 +24,7 @@ export const translations: Record<string, any> = {
     },
     dash: {
       analytics_title: "K-Link 분석",
-      analytics_desc: "실시간 커뮤니티 연결망 및 경제 지표입니다.",
+      analytics_desc: "캐나다 한인을 중심으로, 12개 언어로 연결되는 54억\n글로벌 커뮤니티 네트워크",
       live_network: "라이브 네트워크",
       total_members: "전체 회원 수",
       community_success: "커뮤니티 성공률",
@@ -72,7 +72,7 @@ export const translations: Record<string, any> = {
     },
     dash: {
       analytics_title: "K-Link Analytics",
-      analytics_desc: "Real-time community network and economic indicators.",
+      analytics_desc: "Connecting 5.4 billion through 12 languages,\ncentered on the Korean Canadian community.",
       live_network: "Live Network",
       total_members: "Total Members",
       community_success: "Community Success",
@@ -105,11 +105,10 @@ export const translations: Record<string, any> = {
   ja: { 
     brand: "K-Link", slogan: "Linking Koreans Everywhere", dashboard: "ダッシュボード", settlement: "定住", business: "ビジネス", policy: "政策", support: "支援", admin: "管理", infra: "インフラ", translation: "翻訳",
     auth: { guest: "ゲストモード", anonymous: "匿名ゲスト", auth_needed: "認証が必要", verified: "認証済み", my_account: "マイアカウント", verify_id: "IDを認証" },
-    dash: { analytics_title: "K-Link 分析", analytics_desc: "リアルタイムのコミュニティネットワークと経済指標。", live_network: "ライブネットワーク", total_members: "総会員数", community_success: "コミュニティ成功率", business_transactions: "ビジネス取引", policy_engagement: "政策エンゲージメント", from_last_month: "先月比", network_title: "コミュニティ接続ネットワーク", ai_report: "K-Link AIレポート", ai_loading: "レポート生成中...", active_links: "アクティブリンク", growth_trend: "コミュニティ成長トレンド" },
+    dash: { analytics_title: "K-Link 分析", analytics_desc: "リアルタイムのコミュニティネットワークと経済指標です。", live_network: "ライブネットワーク", total_members: "総会員数", community_success: "コミュニティ成功率", business_transactions: "ビジネス取引", policy_engagement: "政策エンゲージメント", from_last_month: "先月比", network_title: "コミュニティ接続ネットワーク", ai_report: "K-Link AIレポート", ai_loading: "レポート生成中...", active_links: "アクティブリンク", growth_trend: "コミュニティ成長トレンド" },
     network: { settings_title: "ネットワークインテリジェンス", visualize: "接続の可視化", visualize_desc: "コミュニティメンバー間の相互作用ラインを表示します。", highlight: "アクティブノードの強調", highlight_desc: "高頻度のネットワーク参加者に視覚的な強調を適用します。", recent: "最近のリンクのみ", recent_desc: "30日以内に行われた接続のみを表示するようにネットワークをフィルタリングします。", save: "設定を保存" }
   },
-  // Other languages omitted for brevity but following the same schema...
-  es: { brand: "K-Link", network: { settings_title: "Inteligencia de Red", visualize: "Visualizar Conexiones", visualize_desc: "Mostrar líneas entre los miembros de la comunidad que interactúan.", highlight: "Destacar Nodos Activos", highlight_desc: "Aplicar énfasis visual a los participantes de la red de alta frecuencia.", recent: "Solo Enlaces Recientes", recent_desc: "Filtrar la red para mostrar solo las conexiones realizadas en un plazo de 30 días.", save: "Guardar Configuración" } },
-  fr: { brand: "K-Link", network: { settings_title: "Intelligence Réseau", visualize: "Visualiser les Connexions", visualize_desc: "Afficher les lignes entre les membres de la communauté qui interagissent.", highlight: "Mettre en Évidence les Nœuds Actifs", highlight_desc: "Appliquer un accent visuel aux participants du réseau à haute fréquence.", recent: "Liens Récents Uniquement", recent_desc: "Filtrer le réseau pour n'afficher que les connexions établies au cours des 30 derniers jours.", save: "Enregistrer la Configuration" } },
+  es: { brand: "K-Link", network: { settings_title: "Inteligencia de Red", visualize: "Visualizar Conexiones", visualize_desc: "Mostrar líneas entre los miembros de la comunidad que interactúan.", highlight: "Destacar Nodos Activos", highlight_desc: "Aplicar énfasis visual a los participantes de la red de alta frecuencia.", recent: "Solo Enlaces Recientes", recent_desc: "Filter network to show only connections made within 30 days.", save: "Guardar Configuración" } },
+  fr: { brand: "K-Link", network: { settings_title: "Intelligence Réseau", visualize: "Visualiser les Connexions", visualize_desc: "Afficher les lignes entre les membres de la communauté qui interagissent.", highlight: "Mettre en Évidence les Nœuds Actifs", highlight_desc: "Appliquer un accent visuel aux participants du réseau à haute frequência.", recent: "Liens Récents Uniquement", recent_desc: "Filtrer le réseau pour n'afficher que les connexions établies au cours des 30 derniers jours.", save: "Enregistrer la Configuration" } },
   ar: { brand: "K-Link", network: { settings_title: "ذكاء الشبكة", visualize: "تصور الاتصالات", visualize_desc: "عرض الخطوط بين أعضاء المجتمع المتفاعلين.", highlight: "تسليط الضوء على العقد النشطة", highlight_desc: "تطبيق التركيز المرئي على المشاركين في الشبكة عالية التردد.", recent: "الروابط الحديثة فقط", recent_desc: "تصفية الشبكة لإظهار الاتصالات التي تم إجراؤها خلال 30 يومًا فقط.", save: "حفظ التكوين" } }
 };
